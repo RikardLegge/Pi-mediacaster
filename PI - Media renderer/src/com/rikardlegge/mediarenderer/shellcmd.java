@@ -61,13 +61,6 @@ class ShellCmd {
 			// uses the getRuntime instead of projectbuilder, since i was unable
 			// to get the processbuilder to execute long lines of shell code
 			p = Runtime.getRuntime().exec(command);
-			p.waitFor();
-			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line = "";
-			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
-			}
-			System.out.println("Done");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
