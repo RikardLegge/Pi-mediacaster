@@ -22,6 +22,13 @@ For latest version: sudo youtube-dl -h
     
 Java-1.7: sudo apt-get install oracle-java7-jdk
 
+If sound does not work: sudo modprobe snd_bcm2835
+
+Tip: To start the server on startx, create a new file called ".xinitrc" in your home folder. Ex. /home/pi/.xinitrc
+Add the line "java -jar location_of_the_server", for me it looks like "java -jar /home/pi/Downloads/renderer.jar".
+
+Tip 2: Use tmux(http://tmux.sourceforge.net/) to be able to stop a ssh session without the x11(startx) session to stop.
+
 Download the source to this project / clone the github repo., and do a ordinary build with eclipse. There is alternativey a built version in the backage. 
 WARNING: Might not always be up to date.
 
