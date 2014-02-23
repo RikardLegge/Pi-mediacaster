@@ -8,6 +8,7 @@ package com.rikardlegge.mediarenderer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 class ShellCmd {
@@ -21,14 +22,10 @@ class ShellCmd {
 
 	ShellCmd() {
 		// See function create(String command) for case used.
-		// r = Runtime.getRuntime();
+		r = Runtime.getRuntime();
 	}
 
-	public void startProcess(final String command) {
-		create(command);
-	}
-
-	private void create(String command) {
+	public void startProcess(final String command, String args) {
 		System.out.println("$ " + command);
 
 		// This is a previous version whih used the getRuntime instead of the
@@ -51,7 +48,7 @@ class ShellCmd {
 
 		try {
 
-			ProcessBuilder builder = new ProcessBuilder("bash", "-c", command);
+			ProcessBuilder builder = new ProcessBuilder("bash", "-c", command, args);
 			p = builder.start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -63,7 +60,14 @@ class ShellCmd {
 		try {
 			// uses the getRuntime instead of projectbuilder, since i was unable
 			// to get the processbuilder to execute long lines of shell code
-			Runtime.getRuntime().exec(command);
+			p = Runtime.getRuntime().exec(command);
+			p.waitFor();
+			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+			System.out.println("Done");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

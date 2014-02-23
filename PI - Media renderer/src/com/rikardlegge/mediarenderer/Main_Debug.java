@@ -24,28 +24,13 @@ public class Main_Debug {
 
 	static void example(String serverIp, int serverPort) {
 		try {
-			Socket socket = new Socket(serverIp, serverPort); // Opens a socked
-																// connection
-																// for sending
-																// the data
-			socket.setSoTimeout(1000); // Don't realy know if it's needed, but I
-										// keep it since it might be good if no
-										// server is found.
-			OutputStream socketOutputStream = socket.getOutputStream(); // The
-																		// socket
-																		// outputstream
-																		// to
-																		// send
-																		// data
+			Socket socket = new Socket(serverIp, serverPort); // Opens a socked connection for sending the data
+			socket.setSoTimeout(1000); // Don't realy know if it's needed, but I keep it since it might be good if no server is found.
+			OutputStream socketOutputStream = socket.getOutputStream(); // The socket outputstream to send data
 
 			String[] str = {}; // A string with urls to send.
-			socketOutputStream.write((byte) 23); // The contenttype (23:
-													// Youtubelink)
-			socketOutputStream.write((new String(str[2])).getBytes()); // Sends
-																		// the
-																		// string
-																		// as
-																		// bytes.
+			socketOutputStream.write((byte) 23); // The contenttype (23: Youtubelink)
+			socketOutputStream.write((new String(str[2])).getBytes()); // Sends the string as bytes.
 
 			socketOutputStream.close(); // IMPORTANT: Closes the streams
 			socket.close();
@@ -90,7 +75,8 @@ public class Main_Debug {
 					"http://www.diseno-art.com/news_content/wp-content/uploads/2012/09/2013-Jaguar-F-Type-18.jpg",
 					"http://www.digitalphotoartistry.com/rose1.jpg",
 					"http://www.youtube.com/watch?v=9N6CKccJzFg",
-					"http://media-b175.firedrive.com/stream/16/12/beb16e41a4a3c1b987bd0e98b9ae58c2.flv?h=yhlUofM2QDDqawu8tlcZ-A&e=1393106680&f=beb16e41a4a3c1b987bd0e98b9ae58c2.flv" };
+					"http://r8---sn-uxap5nvoxg5-5gol.googlevideo.com/videoplayback?key=yt5&source=youtube&ratebypass=yes&expire=1393187437&id=f4de8229c709cc58&ip=90.230.126.41&mv=m&itag=22&ms=au&upn=2hVKiun9mf4&fexp=936118%2C942400%2C937417%2C937416%2C913434%2C936910%2C936913%2C902907&sparams=id%2Cip%2Cipbits%2Citag%2Cratebypass%2Csource%2Cupn%2Cexpire&mt=1393165504&sver=3&ipbits=0&signature=90616F476C4455E3FB3CF7AE50F99AD575DB22F4.60AB26B9269FD8D0E50C5BC7021803E2C83C0D03" };
+
 			socketOutputStream.write((byte) 23);
 			socketOutputStream.write((new String(str[2])).getBytes());
 

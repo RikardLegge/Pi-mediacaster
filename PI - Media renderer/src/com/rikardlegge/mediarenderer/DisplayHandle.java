@@ -211,6 +211,7 @@ public class DisplayHandle extends JFrame {
 					 * 11: Image
 					 * 21: ImageURL
 					 * 22: VideoURL
+					 * 23: YoutubeURL
 					 * 254: Stop
 					 * Other: Clear
 					 */
@@ -259,7 +260,7 @@ public class DisplayHandle extends JFrame {
 						if (str != null) {
 							panel.repaint();
 							setDrawState(State.omxplayer);
-							shell.startProcess("omxplayer -o hdmi \"" + str + "\""); // Command to start omxplayer on the raspberry pi with
+							shell.startProcess("omxplayer -o hdmi \"" + str + "\"",""); // Command to start omxplayer on the raspberry pi with
 																						// hdmi as the sound output, using the current url
 																						// as a source
 						} else
