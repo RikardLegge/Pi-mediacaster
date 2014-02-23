@@ -1,7 +1,7 @@
 Pi-mediacaster INITIAL ALPHA
 ==============
 ## Description
-This is a small project which enables devices to stream media to eachother and display the content. The initial idea was for a Android phone to be able to send information to a Raspberry pi, in the same way as chromecast devices work.
+This is a small Java project which enables devices to stream media to eachother and display the content. The initial idea was for a Android phone to be able to send information to a Raspberry pi, in the same way as chromecast devices work.
 In the current state, the image viewing is available on systems like Linux, OS X and Windows, since it uses Java Swing to render the content. 
 The video on the other hand currently uses "omxPlayer" for Raspberry pi, as well as the "youtube-dl" to display video. These functions are currently quite unstable, which means that they sometimes work, and sometimes don't. 
 
