@@ -2,7 +2,6 @@ package com.rikardlegge.mediarenderer;
 
 /*
  * Copyright (C) the Pi-mediacaster contributors. All rights reserved.
- *
  * This file is part of Pi-mediacaster, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
@@ -14,8 +13,46 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
+/*
+ * This is a debugscript which i have written to test out new functionality.
+ * The names should be quite clear and it's not fully documented but there is a
+ * examplefunction.
+ */
+
 public class Main_Debug {
 	final static int socketBufferSize = 65536;
+
+	static void example(String serverIp, int serverPort) {
+		try {
+			Socket socket = new Socket(serverIp, serverPort); // Opens a socked
+																// connection
+																// for sending
+																// the data
+			socket.setSoTimeout(1000); // Don't realy know if it's needed, but I
+										// keep it since it might be good if no
+										// server is found.
+			OutputStream socketOutputStream = socket.getOutputStream(); // The
+																		// socket
+																		// outputstream
+																		// to
+																		// send
+																		// data
+
+			String[] str = {}; // A string with urls to send.
+			socketOutputStream.write((byte) 23); // The contenttype (23:
+													// Youtubelink)
+			socketOutputStream.write((new String(str[2])).getBytes()); // Sends
+																		// the
+																		// string
+																		// as
+																		// bytes.
+
+			socketOutputStream.close(); // IMPORTANT: Closes the streams
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	static void sendFile(String serverIp, int serverPort) {
 		try {
@@ -95,13 +132,15 @@ public class Main_Debug {
 			break;
 		}
 	}
-	
+
 	public static void executeCommand(String command) {
 
-		ProcessBuilder builder = new ProcessBuilder("ipconfig");//new ProcessBuilder("killall","-9", "omxplayer");
+		ProcessBuilder builder = new ProcessBuilder("ipconfig");// new
+																// ProcessBuilder("killall","-9",
+																// "omxplayer");
 		Process p;
 		try {
-			System.out.println("$ "+ command);
+			System.out.println("$ " + command);
 			p = builder.start();
 			p.waitFor();
 			System.out.println("waited");

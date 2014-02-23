@@ -2,7 +2,6 @@ package com.rikardlegge.mediarenderer;
 
 /*
  * Copyright (C) the Pi-mediacaster contributors. All rights reserved.
- *
  * This file is part of Pi-mediacaster, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
@@ -35,9 +34,11 @@ public class ReciverHandle {
 
 	public void RecivedImage(BufferedImage img) {
 
-		Clear();
+		Clear(); // Clears and flushes the previous image is any
 		screen = Main.getScreenDimensions();
 
+		// Determends the size to make the image fullscreen at the original
+		// aspect ratio. Can be changed to get other effects
 		int w = 0, h = 0;
 		if (img.getWidth() / img.getHeight() > screen.getWidth() / screen.getHeight()) {
 			w = (int) screen.getWidth();
@@ -46,22 +47,25 @@ public class ReciverHandle {
 			w = (int) (screen.getHeight() / img.getHeight() * img.getWidth());
 			h = (int) screen.getHeight();
 		}
-		// System.out.println("Width: " + img.getWidth() + " / Height: " +
-		// img.getHeight());
-		// System.out.println(w + "/" + h);
 
+		// Adds an image to the itemcontainer
 		itemContainer.setImage(new ImageIcon(img));
+		// Set itemcontainer size
 		itemContainer.setSize((int) screen.getWidth(), (int) screen.getHeight());
+		// Set image size. Custom implementation
 		itemContainer.setImageSize(w, h);
 
+		// Repaints the panel / Render the image
 		panel.repaint();
 
-		img.flush();
+		img.flush(); // Get back system resources
 	}
 
 	public BufferedImage GetImageFromURL(String str) {
 		try {
-			return ImageIO.read(new URL(str));
+			return ImageIO.read(new URL(str)); // Very basic function for
+												// getting the image. Not very
+												// safe but works
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -75,6 +79,8 @@ public class ReciverHandle {
 		}
 	}
 
+	// Custom implementation of the JLable, for displaying the image centered
+	// and at a specific size.
 	class JImageLabel extends JLabel {
 		private static final long serialVersionUID = -530032801718700014L;
 		ImageIcon imageIcon;
@@ -90,6 +96,7 @@ public class ReciverHandle {
 			this.imageIcon = icon;
 		}
 
+		// Custom for settings the exact image size
 		public void setImageSize(int w, int h) {
 			this.w = w;
 			this.h = h;
@@ -99,9 +106,12 @@ public class ReciverHandle {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 
+			// Determens the position of the left top corner for the image to be
+			// centered
 			x = (int) ((getWidth() - w) / 2);
 			y = (int) ((getHeight() - h) / 2);
 
+			// Draw if image exists
 			if (imageIcon != null)
 				g.drawImage(imageIcon.getImage(), x, y, w, h, this);
 

@@ -30,9 +30,10 @@ import javax.swing.JPanel;
 public class DisplayHandle extends JFrame {
 
 	private static final long serialVersionUID = 8879271623173847863L;
-	private static final int serverPort = 5000;
-	private static final int socketBufferSize = 65536;
-	private static final int maxDisplayTime = 60 * 60;
+	private static final int serverPort = 5000; // Socket variables
+	private static final int socketBufferSize = 65536; // Socket variables
+	private static final int maxDisplayTime = 60 * 60; // How long will local content be shown. Does not include videos since they are
+														// displayed using external player Seconds
 
 	private JPanel panel;
 	private ReciverHandle reciverHandle;
@@ -55,6 +56,7 @@ public class DisplayHandle extends JFrame {
 		reciverHandle = new ReciverHandle(panel);
 		shell = new ShellCmd();
 
+		// Use as a service on other systems?
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -63,6 +65,7 @@ public class DisplayHandle extends JFrame {
 			}
 		});
 
+		// Caches the ESC key and exits the program.
 		addKeyListener(new KeyListener() {
 			public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == 27) {
@@ -78,22 +81,25 @@ public class DisplayHandle extends JFrame {
 		});
 
 		getContentPane().add(panel);
-		setUndecorated(true);
-		setResizable(false);
-		setSize(Main.getScreenDimensions());
-		setVisible(true);
-		setIgnoreRepaint(true);
+		setUndecorated(true); // Remove the borders
+		setResizable(false); // Static size
+		setSize(Main.getScreenDimensions()); // Makes it fullscreen
+		setVisible(true); // Displays it
+		setIgnoreRepaint(true); // reduces CPU usage since we only need to repaint if something happends
 
+		// Hide cursor
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 		setCursor(blankCursor);
 
+		// Initiate the basic UI
 		panel.setBackground(Color.BLACK);
-		StateLable = new JLabel("");
-		StateLable.setForeground(Color.DARK_GRAY);
+		StateLable = new JLabel(""); // Debuglable
+		StateLable.setForeground(Color.DARK_GRAY); // Makes it less distinct
 		panel.add(StateLable);
-		panel.repaint();
+		panel.repaint(); // repaints to set the initial content
 
+		// New thread to listen for connections, since this otherwise halts the program.
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				listenForConnection();
@@ -101,6 +107,8 @@ public class DisplayHandle extends JFrame {
 		});
 		thread.start();
 
+		// Infinite loop to animate the UI, aswell as handles other things.
+		// Delay: 2000 ms.
 		while (!exit) {
 			animateUI();
 			animationFrame++;
@@ -114,11 +122,13 @@ public class DisplayHandle extends JFrame {
 
 	}
 
+	// Exits the program.
 	private void initiateExit() {
 		exit = true;
 		System.exit(0);
 	}
 
+	// Keep the screen awake by moving the mouse on every animation frame
 	private void keepAwake() {
 		if (Main.robot != null) {
 			Point loc = MouseInfo.getPointerInfo().getLocation();
@@ -127,6 +137,7 @@ public class DisplayHandle extends JFrame {
 		}
 	}
 
+	// Animate / Display messages which might help see if the system is responsive.
 	private void animateUI() {
 
 		if (System.currentTimeMillis() - lastUpdate > maxDisplayTime * 1000) {
@@ -134,6 +145,7 @@ public class DisplayHandle extends JFrame {
 			setDrawState(State.idle);
 		}
 
+		// Sets the text depending on the state
 		String txt = "Unknown state";
 		switch (state) {
 		case idle:
@@ -148,25 +160,31 @@ public class DisplayHandle extends JFrame {
 		case displaying:
 			return;
 		case omxplayer:
-			return;
+			txt = "Loading video";
+			break;
 		default:
 			break;
 		}
 
+		// Loadingish...
 		for (int i = 0; i < animationFrame % 4; i++)
 			txt += ".";
 		StateLable.setText(txt);
+		// Only repaint the lable
 		StateLable.repaint();
 	}
 
+	// Sets the current STATE of the program
 	private void setDrawState(State state) {
 		this.state = state;
+		// Clear if not displaying new image
 		boolean toDisplay = (state == State.displaying) ? false : true;
 		if (toDisplay)
 			reciverHandle.Clear();
 		animateUI();
 	}
 
+	// Reads a byteStream. Simple way of reading for example a URL from the socket
 	public String readByteStream(BufferedInputStream dis) {
 		String str = "";
 		int byt;
@@ -181,20 +199,15 @@ public class DisplayHandle extends JFrame {
 		}
 	}
 
+	// RUNTIME: Infinite loop to listen for a connection and hadle it.
 	public void listenForConnection() {
 		try {
 			socket = new ServerSocket(serverPort);
 			while (!exit) {
 				try {
 
-					Socket clientSocket = socket.accept();
-
-					lastUpdate = System.currentTimeMillis();
-
-					BufferedInputStream dis = new BufferedInputStream(clientSocket.getInputStream(), socketBufferSize);
-					int packageContent = dis.read();
-
 					/*
+					 * BYTE VALUES ONLY
 					 * 11: Image
 					 * 21: ImageURL
 					 * 22: VideoURL
@@ -202,21 +215,29 @@ public class DisplayHandle extends JFrame {
 					 * Other: Clear
 					 */
 
-					BufferedImage img;
-					String str;
+					Socket clientSocket = socket.accept(); // Wait for the socket to get a connection
+
+					lastUpdate = System.currentTimeMillis(); // Sets the last update which is used to dim the display if idle
+
+					BufferedInputStream dis = new BufferedInputStream(clientSocket.getInputStream(), socketBufferSize);
+					int packageContent = dis.read(); // Package content id, Se previous table for explanation
+
+					BufferedImage img; // Cache for if recived image
+					String str; // URL Cache
 					System.out.println("Recived:" + packageContent);
 
 					if (state == State.omxplayer) {
-						shell.executeCommand("killall -9 /usr/bin/omxplayer.bin");
+						shell.executeCommand("killall -9 /usr/bin/omxplayer.bin"); // Command to kill the current video process, omxplayer
+																					// (Only tested on a raspberry pi)
 					}
 
 					switch (packageContent) {
 					case 11:
-						setDrawState(State.downloading);
-						img = ImageIO.read(dis);
-						setDrawState(State.displaying);
+						setDrawState(State.downloading); // Changes the draw state
+						img = ImageIO.read(dis); // Loads the image from the sending device
+						setDrawState(State.displaying); // Change state to prevent repaint
 						if (img != null) {
-							reciverHandle.RecivedImage(img);
+							reciverHandle.RecivedImage(img); // Displays the recently loaded image
 						} else
 							setDrawState(State.error);
 						break;
@@ -234,28 +255,32 @@ public class DisplayHandle extends JFrame {
 							setDrawState(State.error);
 						break;
 					case 22:
-						str = readByteStream(dis);
+						str = readByteStream(dis); // Get URL
 						if (str != null) {
 							panel.repaint();
 							setDrawState(State.omxplayer);
-							shell.startProcess("omxplayer -o hdmi \"" + str + "\"");
+							shell.startProcess("omxplayer -o hdmi \"" + str + "\""); // Command to start omxplayer on the raspberry pi with
+																						// hdmi as the sound output, using the current url
+																						// as a source
 						} else
 							setDrawState(State.error);
 						break;
 					case 23:
-						str = readByteStream(dis);
+						str = readByteStream(dis); // Get URL
 						if (str != null) {
 							panel.repaint();
 							setDrawState(State.omxplayer);
-							shell.executeCommand("omxplayer -o hdmi $(youtube-dl -s -g \"" + str + "\")");
+							shell.executeCommand("omxplayer -o hdmi $(youtube-dl -s -g \"" + str + "\")"); // See case 22:. + uses the
+																											// youtube-dl to fech the true
+																											// video url.
 						} else
 							setDrawState(State.error);
 						break;
 					case 254:
-						initiateExit();
+						initiateExit(); // Exits the program
 						break;
 					default:
-						setDrawState(State.idle);
+						setDrawState(State.idle); // Stops all and makes the program idle
 						break;
 					}
 					dis.close();
@@ -270,7 +295,7 @@ public class DisplayHandle extends JFrame {
 			e.printStackTrace();
 		}
 		try {
-			socket.close();
+			socket.close(); // Closes the socket on exit
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
