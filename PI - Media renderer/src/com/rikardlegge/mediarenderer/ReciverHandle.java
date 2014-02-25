@@ -1,22 +1,18 @@
 package com.rikardlegge.mediarenderer;
 
 /*
- * Copyright (C) the Pi-mediacaster contributors. All rights reserved.
- * This file is part of Pi-mediacaster, distributed under the GNU GPL v2 with
- * a Linking Exception. For full terms see the included COPYING file.
+ * Copyright (C) Rikard Legge. All rights reserved.
  */
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class ReciverHandle {
@@ -32,6 +28,11 @@ public class ReciverHandle {
 		panel.add(itemContainer);
 	}
 
+	/**
+	 * Displays an image on the screen usin a custom JLable (JImageLable)
+	 * 
+	 * @param img
+	 */
 	public void RecivedImage(BufferedImage img) {
 
 		Clear(); // Clears and flushes the previous image is any
@@ -61,60 +62,42 @@ public class ReciverHandle {
 		img.flush(); // Get back system resources
 	}
 
-	public BufferedImage GetImageFromURL(String str) {
-		try {
-			return ImageIO.read(new URL(str)); // Very basic function for
-												// getting the image. Not very
-												// safe but works
-		} catch (IOException e) {
-			e.printStackTrace();
+	public static Dimension scaleToScreen_Full(float sw, float sh, float gw, float gh) {
+		if (sw / sh > gw / gh) {
+			return new Dimension((int) gw, (int) (gw / sw * sh));
+		} else {
+			return new Dimension((int) (gh / sh * sw), (int) gh);
 		}
-		return null;
+	}
+	
+	public static Dimension scaleToScreen_Full_Inverse(float sw, float sh, float gw, float gh) {
+		if (sw / sh < gw / gh) {
+			return new Dimension((int) gw, (int) (gw / sw * sh));
+		} else {
+			return new Dimension((int) (gh / sh * sw), (int) gh);
+		}
 	}
 
+	/**
+	 * Gets an image from the url specified
+	 * 
+	 * @param An
+	 *            url to fech the image from
+	 * @return The image from the url
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	public BufferedImage GetImageFromURL(String str) throws MalformedURLException, IOException {
+		return ImageIO.read(new URL(str)); // Very basic function for getting the image. Not very safe, but works
+	}
+
+	/**
+	 * Clears the screen
+	 */
 	public void Clear() {
 		if (itemContainer.imageIcon != null) {
 			itemContainer.imageIcon.getImage().flush();
 			itemContainer.imageIcon = null;
-		}
-	}
-
-	// Custom implementation of the JLable, for displaying the image centered
-	// and at a specific size.
-	class JImageLabel extends JLabel {
-		private static final long serialVersionUID = -530032801718700014L;
-		ImageIcon imageIcon;
-		Image image;
-		int x, y, w, h;
-
-		public JImageLabel(ImageIcon icon) {
-			super();
-			this.imageIcon = icon;
-		}
-
-		public void setImage(ImageIcon icon) {
-			this.imageIcon = icon;
-		}
-
-		// Custom for settings the exact image size
-		public void setImageSize(int w, int h) {
-			this.w = w;
-			this.h = h;
-		}
-
-		@Override
-		public void paintComponent(Graphics g) {
-			super.paintComponent(g);
-
-			// Determens the position of the left top corner for the image to be
-			// centered
-			x = (int) ((getWidth() - w) / 2);
-			y = (int) ((getHeight() - h) / 2);
-
-			// Draw if image exists
-			if (imageIcon != null)
-				g.drawImage(imageIcon.getImage(), x, y, w, h, this);
-
 		}
 	}
 }

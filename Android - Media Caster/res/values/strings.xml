@@ -6,5 +6,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="clearDisplay">Clear display</string>
     <string name="shutDown">Shut down server</string>
+    <string name="playpause">Play / Pause</string>
+    <string name="back30s">-30</string>
+    <string name="forward30s">+30</string>
+    <string name="forward600s">+600</string>
+    <string name="back600s">-600</string>
 
 </resources>

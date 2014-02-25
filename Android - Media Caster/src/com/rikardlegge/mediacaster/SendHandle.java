@@ -1,11 +1,8 @@
 package com.rikardlegge.mediacaster;
 
 /*
- * Copyright (C) the Pi-mediacaster contributors. All rights reserved.
- * This file is part of Pi-mediacaster, distributed under the GNU GPL v2 with
- * a Linking Exception. For full terms see the included COPYING file.
+ * Copyright (C) Rikard Legge. All rights reserved.
  */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -91,8 +88,7 @@ public class SendHandle {
 	}
 
 	private void testConnection() {
-		// TODO: Needs some sort of test to see if the server is available and
-		// active
+		// TODO: Needs some sort of test to see if the server is available and active
 	}
 
 	// First part of the send command. Creates a socket, sets the timeout and

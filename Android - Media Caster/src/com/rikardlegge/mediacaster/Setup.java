@@ -1,10 +1,9 @@
 package com.rikardlegge.mediacaster;
 
 /*
- * Copyright (C) the Pi-mediacaster contributors. All rights reserved.
- * This file is part of Pi-mediacaster, distributed under the GNU GPL v2 with
- * a Linking Exception. For full terms see the included COPYING file.
+ * Copyright (C) Rikard Legge. All rights reserved.
  */
+import java.io.ByteArrayInputStream;
 
 import android.app.Activity;
 import android.content.Context;
@@ -77,11 +76,37 @@ public class Setup extends Activity {
 
 	// Connected to the views shutdownbutton / Currently hidden
 	public void shutDown(View view) {
-		sendHandle.sendCommand((byte) 254, false);
+		sendHandle.sendCommand((byte) Commandid.Quit.Id(), false);
 	}
 
 	// Connected to the views shutdownbutton / Sends a clear command
 	public void clearDisplay(View view) {
-		sendHandle.sendCommand((byte) 1, false);
+		sendHandle.sendCommand((byte) Commandid.Other.Id(), false);
+	}
+
+	// Connected to the views shutdownbutton / Sends a clear command
+	public void PlayPause(View view) {
+		ByteArrayInputStream iStream = new ByteArrayInputStream(new String("pause").getBytes());
+		sendHandle.sendData((byte) Commandid.Video_Controll.Id(), iStream, false);
+	}
+
+	public void forward600s(View view) {
+		ByteArrayInputStream iStream = new ByteArrayInputStream(new String("seek600").getBytes());
+		sendHandle.sendData((byte) Commandid.Video_Controll.Id(), iStream, false);
+	}
+
+	public void back600s(View view) {
+		ByteArrayInputStream iStream = new ByteArrayInputStream(new String("seek-600").getBytes());
+		sendHandle.sendData((byte) Commandid.Video_Controll.Id(), iStream, false);
+	}
+
+	public void forward30s(View view) {
+		ByteArrayInputStream iStream = new ByteArrayInputStream(new String("seek30").getBytes());
+		sendHandle.sendData((byte) Commandid.Video_Controll.Id(), iStream, false);
+	}
+
+	public void back30s(View view) {
+		ByteArrayInputStream iStream = new ByteArrayInputStream(new String("seek-30").getBytes());
+		sendHandle.sendData((byte) Commandid.Video_Controll.Id(), iStream, false);
 	}
 }

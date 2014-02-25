@@ -9,45 +9,90 @@
     tools:context="com.rikardlegge.mediacaster.Setup" >
 
     <LinearLayout
-        android:id="@+id/linearLayout2"
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:layout_marginTop="30dp" >
 
-        <LinearLayout
-            android:id="@+id/linearLayout1"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/EditText_IP"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp" >
+            android:layout_weight="1"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="number|text" >
 
-            <EditText
-                android:id="@+id/EditText_IP"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:gravity="center"
-                android:inputType="number|text" />
+            <requestFocus />
+        </EditText>
 
-            <EditText
-                android:id="@+id/EditText_Port"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:ems="10"
-                android:gravity="center"
-                android:inputType="numberDecimal" />
-        </LinearLayout>
+        <EditText
+            android:id="@+id/EditText_Port"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/Button01"
-        android:layout_width="wrap_content"
+        android:id="@+id/Button02"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/linearLayout2"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/linearLayout2"
+        android:layout_marginBottom="10dp"
         android:onClick="clearDisplay"
         android:text="@string/clearDisplay" />
+
+    <Button
+        android:id="@+id/Button01"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/LinearLayout01"
+        android:layout_centerVertical="true"
+        android:onClick="PlayPause"
+        android:text="@string/playpause" />
+
+    <LinearLayout
+        android:id="@+id/LinearLayout01"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/Button01"
+        android:gravity="center_horizontal|center_vertical|fill_horizontal"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/Button03"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="back600s"
+            android:text="@string/back600s" />
+
+        <Button
+            android:id="@+id/Button04"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="back30s"
+            android:text="@string/back30s" />
+
+        <Button
+            android:id="@+id/Button05"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="forward30s"
+            android:text="@string/forward30s" />
+
+        <Button
+            android:id="@+id/Button06"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="forward600s"
+            android:text="@string/forward600s" />
+    </LinearLayout>
 
 </RelativeLayout>
