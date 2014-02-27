@@ -1,4 +1,4 @@
-Pi-mediacaster INITIAL ALPHA
+Pi-mediacaster - INITIAL ALPHA
 ==============
 ## Description
 This is a small Java project which enables devices to stream media to each other and display the content. The initial idea was for a Android phone to be able to send information to a Raspberry pi, in the same way as chromecast devices work. NOT WITH A CHROMECAST DEVICE, NOR WITH THE SAME PROTOCOL.
