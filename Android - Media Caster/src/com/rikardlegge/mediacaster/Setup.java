@@ -32,46 +32,40 @@ public class Setup extends Activity {
 		// data.
 		final TextView tv_ip = (TextView) findViewById(R.id.EditText_IP);
 		final TextView tv_port = (TextView) findViewById(R.id.EditText_Port);
+		final TextView tv_key = (TextView) findViewById(R.id.EditText_Key);
 
 		System.out.println(Settings.ip + ":" + Settings.port);
 
+		OnEditorActionListener onEditorActionListener = new OnEditorActionListener() {
+
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+
+					if (v.equals(tv_ip))
+						Settings.prefs.edit().putString("ip", tv_ip.getText().toString()).commit();
+					else if (v.equals(tv_port))
+						Settings.prefs.edit().putInt("port", Integer.valueOf(tv_port.getText().toString())).commit();
+					else if (v.equals(tv_key)) Settings.prefs.edit().putString("key", tv_key.getText().toString()).commit();
+
+					// Saves the settings
+					Settings.readSettings();
+
+					// Hide the keyboard
+					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+					return true;
+				}
+				return false;
+			}
+		};
+
 		tv_ip.setText(Settings.ip + "");
 		tv_port.setText(Settings.port + "");
+		tv_key.setText(Settings.key + "");
 
-		// Listeners for wen the done button is pressed
-		tv_ip.setOnEditorActionListener(new OnEditorActionListener() {
-
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_ACTION_DONE) {
-					// Saves the settings
-					Settings.prefs.edit().putString("ip", tv_ip.getText().toString()).commit();
-					Settings.readSettings();
-
-					// Hide the keyboard
-					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-					return true;
-				}
-				return false;
-			}
-		});
-		tv_port.setOnEditorActionListener(new OnEditorActionListener() {
-
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_ACTION_DONE) {
-					// Saves the settings
-					Settings.prefs.edit().putInt("port", Integer.valueOf(tv_port.getText().toString())).commit();
-					Settings.readSettings();
-
-					// Hide the keyboard
-					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-					return true;
-				}
-				return false;
-			}
-		});
-
+		tv_ip.setOnEditorActionListener(onEditorActionListener);
+		tv_port.setOnEditorActionListener(onEditorActionListener);
+		tv_key.setOnEditorActionListener(onEditorActionListener);
 	}
 
 	// Connected to the views shutdownbutton / Currently hidden

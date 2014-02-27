@@ -47,6 +47,7 @@ public class DisplayHandle extends JFrame {
 	private boolean exit;
 	private State state;
 	private String stateMessage;
+	private String validationKey;
 
 	// The states of the program
 	enum State {
@@ -65,6 +66,7 @@ public class DisplayHandle extends JFrame {
 		lastUpdate = 0;
 		exit = false;
 		state = State.idle;
+		validationKey = (validationKey != null) ? validationKey : "TestKey001";
 
 		initiateShell();
 		setupUI();
@@ -323,10 +325,10 @@ public class DisplayHandle extends JFrame {
 				case "seek600":
 					shell.executeCommand("sh helper.sh omxplayer_seek600");
 				break;
-				case "quit":
+				case "_quit":
 					shell.executeCommand("sh helper.sh omxplayer_quit");
 				break;
-				case "forcequit":
+				case "quit": // forcequit
 					shell.executeCommand("killall -9 /usr/bin/omxplayer.bin");
 					shell.executeCommand("killall -9 youtube-dl");
 				break;
@@ -374,10 +376,18 @@ public class DisplayHandle extends JFrame {
 		while (!exit) {
 			Socket clientSocket = null;
 			BufferedInputStream dis = null;
+			// BufferedOutputStream dos = null;
 			try {
 				clientSocket = socket.accept(); // Wait for the socket to get a connection
 				dis = new BufferedInputStream(clientSocket.getInputStream(), socketBufferSize);
+				// dos = new BufferedOutputStream(clientSocket.getOutputStream(), socketBufferSize);
+
 				lastUpdate = System.currentTimeMillis();
+
+				/* String key = readByteStream(dis);
+				int sucessvalue = (key.equals(validationKey)) ? 1 : 0;
+				dos.write((byte) sucessvalue);
+				if (sucessvalue == 0) throw new Exception("Invalid key");*/
 
 				int packageId = dis.read();
 				System.out.println("Recived: " + Commandid.getById(packageId));
@@ -390,7 +400,7 @@ public class DisplayHandle extends JFrame {
 						shell.executeCommand("killall -9 youtube-dl");
 						Thread.sleep(100);
 						shell.executeCommandAndWaitForTermination("killall -9 /usr/bin/omxplayer.bin");
-						Thread.sleep(5000); // Make sure to not kill a new instance of the player.
+						// Thread.sleep(5000); // Make sure to not kill a new instance of the player.
 					}
 					setDrawState(State.downloading);
 				}
@@ -460,7 +470,8 @@ public class DisplayHandle extends JFrame {
 							setDrawState(State.displaying); // Change state to prevent repaint
 							if (img != null) {
 								reciverHandle.RecivedImage(img); // Displays the recently loaded image
-							} else setDrawState(State.error);
+							} else
+								setDrawState(State.error);
 						break;
 						case 21:
 							setDrawState(State.downloading);
@@ -470,8 +481,10 @@ public class DisplayHandle extends JFrame {
 								img = reciverHandle.GetImageFromURL(str);
 								setDrawState(State.displaying);
 							}
-							if (img != null) reciverHandle.RecivedImage(img);
-							else setDrawState(State.error);
+							if (img != null)
+								reciverHandle.RecivedImage(img);
+							else
+								setDrawState(State.error);
 						break;
 						case 22:
 							str = readByteStream(dis); // Get URL
@@ -485,7 +498,8 @@ public class DisplayHandle extends JFrame {
 																							// current
 																							// url
 																							// as a source
-							} else setDrawState(State.error);
+							} else
+								setDrawState(State.error);
 						break;
 						case 23:
 							str = readByteStream(dis); // Get URL
@@ -496,7 +510,8 @@ public class DisplayHandle extends JFrame {
 																												// youtube-dl to fech the
 																												// true
 																												// video url.
-							} else setDrawState(State.error);
+							} else
+								setDrawState(State.error);
 						break;
 						case 254:
 							initiateExit(); // Exits the program

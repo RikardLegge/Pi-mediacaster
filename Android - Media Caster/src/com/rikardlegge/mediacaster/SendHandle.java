@@ -16,6 +16,7 @@ public class SendHandle {
 
 	private static int bufferSize;
 	private static int port;
+	private static String key;
 	private static String ip;
 
 	// Sends all types of data which have a inputstream.
@@ -35,6 +36,8 @@ public class SendHandle {
 		bufferSize = Settings.bufferSize;
 		port = Settings.port;
 		ip = Settings.ip;
+		key = Settings.key;
+		if (key != null) ;
 
 		inputStream = newInputStream; // Sets the inputstream for later sending
 										// the data
@@ -50,8 +53,7 @@ public class SendHandle {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				if (shutdown)
-					IntentReceiver.requestExit();
+				if (shutdown) IntentReceiver.requestExit();
 			}
 		}).start();
 	}
@@ -81,8 +83,7 @@ public class SendHandle {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				if (shutdown)
-					IntentReceiver.requestExit();
+				if (shutdown) IntentReceiver.requestExit();
 			}
 		}).start();
 	}
@@ -116,11 +117,8 @@ public class SendHandle {
 
 	// Closes all the ports and streams
 	private void endSend() throws IOException {
-		if (inputStream != null)
-			inputStream.close();
-		if (socketOutputStream != null)
-			socketOutputStream.close();
-		if (socket != null)
-			socket.close();
+		if (inputStream != null) inputStream.close();
+		if (socketOutputStream != null) socketOutputStream.close();
+		if (socket != null) socket.close();
 	}
 }

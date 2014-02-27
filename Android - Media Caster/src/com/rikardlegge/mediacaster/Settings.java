@@ -12,6 +12,7 @@ public class Settings {
 	static int port;
 	static int bufferSize;
 	static String ip;
+	static String key;
 	static SharedPreferences prefs;
 
 	static Context context;
@@ -31,6 +32,7 @@ public class Settings {
 		port = prefs.getInt("port", 5000);
 		bufferSize = prefs.getInt("bufferSize", 65536);
 		ip = prefs.getString("ip", "192.168.0.100");
+		key = prefs.getString("key", "psw");
 	}
 
 	static void writeSettings() {
@@ -38,6 +40,7 @@ public class Settings {
 		prefs.edit().putInt("port", port);
 		prefs.edit().putInt("bufferSize", bufferSize);
 		prefs.edit().putString("pi", ip);
+		prefs.edit().putString("key", key);
 		prefs.edit().commit();
 	}
 }

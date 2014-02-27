@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Media Caster</string>
+    <string name="app_name">ToPi£</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="clearDisplay">Clear display</string>
@@ -11,5 +11,8 @@
     <string name="forward30s">+30</string>
     <string name="forward600s">+600</string>
     <string name="back600s">-600</string>
+    <string name="ValidationKey">Validation key</string>
+    <string name="Port">Port</string>
+    <string name="Ip">Ip address</string>
 
 </resources>

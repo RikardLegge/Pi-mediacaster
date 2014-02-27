@@ -25,7 +25,7 @@ public class Main_Debug {
 			OutputStream socketOutputStream = socket.getOutputStream(); // The socket outputstream to send data
 
 			String[] str = {}; // A string with urls to send.
-			socketOutputStream.write((byte)Commandid.Other.Id()); // The contenttype (23: Youtubelink)
+			socketOutputStream.write((byte) Commandid.Other.Id()); // The contenttype (23: Youtubelink)
 			socketOutputStream.write((new String(str[2])).getBytes()); // Sends the string as bytes.
 
 			// IMPORTANT: Closes the streams
@@ -66,23 +66,24 @@ public class Main_Debug {
 		try {
 			Socket socket = new Socket(serverIp, serverPort);
 			socket.setSoTimeout(1000);
-			OutputStream socketOutputStream = socket.getOutputStream();
+			OutputStream dos = socket.getOutputStream();
 
-			String[] str = {
-					"http://www.diseno-art.com/news_content/wp-content/uploads/2012/09/2013-Jaguar-F-Type-18.jpg",
+			String[] str = { "http://www.diseno-art.com/news_content/wp-content/uploads/2012/09/2013-Jaguar-F-Type-18.jpg",
 					"http://www.digitalphotoartistry.com/rose1.jpg",
-					"http://wallpoper.com/images/00/41/69/85/england-stonehenge_00416985.jpg",
-					"http://www.youtube.com/watch?v=KOoKCuq6YY8"};
-			socketOutputStream.write((byte) Commandid.URL_Youtube.Id());
-			socketOutputStream.write((new String(str[3])).getBytes());
+					"http://wallpoper.com/images/00/41/69/85/england-stonehenge_00416985.jpg", "http://www.youtube.com/watch?v=KOoKCuq6YY8" };
 
-			socketOutputStream.close();
+			// dos.write((new String("TestKey001")).getBytes());
+			dos.write((byte) Commandid.URL_Youtube.Id());
+			dos.write((new String(str[3])).getBytes());
+
+			// dis.close();
+			dos.close();
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static void sendCommand(String serverIp, int serverPort, String cmd) {
 		try {
 			Socket socket = new Socket(serverIp, serverPort);
@@ -116,7 +117,7 @@ public class Main_Debug {
 		String url = "192.168.0.109";
 		int port = 5000;
 
-		int cmd = 3;
+		int cmd = 2;
 		switch (cmd) {
 			case 0:
 				clear(url, port);

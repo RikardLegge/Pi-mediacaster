@@ -20,7 +20,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:gravity="center"
+            android:hint="@string/Ip"
             android:inputType="number|text" >
 
             <requestFocus />
@@ -32,7 +34,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:ems="10"
+            android:imeOptions="actionDone"
             android:gravity="center"
+            android:hint="@string/Port"
             android:inputType="numberDecimal" />
     </LinearLayout>
 
@@ -94,5 +98,17 @@
             android:onClick="forward600s"
             android:text="@string/forward600s" />
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/EditText_Key"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:layout_below="@+id/linearLayout1"
+        android:ems="10"
+        android:imeOptions="actionDone"
+        android:gravity="center"
+        android:hint="@string/ValidationKey"
+        android:inputType="text" />
 
 </RelativeLayout>
