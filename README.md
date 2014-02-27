@@ -1,7 +1,7 @@
 Pi-mediacaster - INITIAL ALPHA
 ==============
 ## Description
-This is a small Java project which enables devices to stream media to each other and display the content.(A bit like DLNA, but since i havn't found a DLNA renderer for my raspberry pi which supported hardware accelerated playback, I decided to build my own.) The initial idea was for a Android phone to be able to send information to a Raspberry pi, in the same way as chromecast/DLNA devices work. NOT WITH A CHROMECAST DEVICE, NOR WITH THE SAME PROTOCOL.
+This is a small Java project which enables devices to stream media to each other and display the content.(A bit like DLNA, but since i haven't found a DLNA renderer for my raspberry pi which supported hardware accelerated playback, I decided to build my own.) The initial idea was for a Android phone to be able to send information to a Raspberry pi, in the same way as chromecast/DLNA devices work. NOT WITH A CHROMECAST DEVICE, NOR WITH THE SAME PROTOCOL.
 In the current state, the image viewing is available on systems like Linux, OS X and Windows, since it uses Java Swing to render the content. 
 The video on the other hand currently uses "omxPlayer" for Raspberry pi, as well as the "youtube-dl" to display video. These functions are currently quite unstable, which means that they sometimes work, and sometimes don't. 
 
