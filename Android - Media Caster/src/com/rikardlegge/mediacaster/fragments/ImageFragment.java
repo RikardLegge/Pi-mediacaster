@@ -171,6 +171,7 @@ public class ImageFragment extends Fragment implements OnTouchListener {
 
 		position.x = 0;
 		position.y = 0;
+		rotation = 0;
 
 		update(true);
 	}
