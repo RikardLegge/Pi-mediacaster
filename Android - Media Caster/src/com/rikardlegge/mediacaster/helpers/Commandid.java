@@ -1,12 +1,8 @@
-package com.rikardlegge.mediacaster;
+package com.rikardlegge.mediacaster.helpers;
 
-/*
- * Copyright (C) Rikard Legge. All rights reserved.
- */
-
-enum Commandid {
-	Other(0, true), Image(1, true), URL_Image(11, true), URL_Video(12, true), URL_Youtube(13, true), Video_Controll(252, false), Command(
-			253, false), Quit(254, true);
+public enum Commandid {
+	Other(0, true), Image(1, true), URL_Image(11, true), URL_Video(12, true), URL_Youtube(13, true), GetInfo(250, false), Image_Controll(
+			251, false), Video_Controll(252, false), Command(253, false), Quit(254, true);
 
 	private int id;
 	private boolean clear;
@@ -16,7 +12,7 @@ enum Commandid {
 		this.clear = clear;
 	}
 
-	int Id() {
+	public int Id() {
 		return this.id;
 	}
 

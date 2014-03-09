@@ -1,9 +1,5 @@
 package com.rikardlegge.mediarenderer;
 
-/*
- * Copyright (C) Rikard Legge. All rights reserved.
- */
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -18,7 +14,7 @@ import javax.swing.JPanel;
 public class ReciverHandle {
 	private JPanel panel;
 	private Dimension screen;
-	private JImageLabel itemContainer;
+	public JImageLabel itemContainer;
 
 	ReciverHandle(JPanel panel) {
 		this.panel = panel;
@@ -58,8 +54,6 @@ public class ReciverHandle {
 
 		// Repaints the panel / Render the image
 		panel.repaint();
-
-		img.flush(); // Get back system resources
 	}
 
 	public static Dimension scaleToScreen_Full(float sw, float sh, float gw, float gh) {
@@ -69,7 +63,7 @@ public class ReciverHandle {
 			return new Dimension((int) (gh / sh * sw), (int) gh);
 		}
 	}
-	
+
 	public static Dimension scaleToScreen_Full_Inverse(float sw, float sh, float gw, float gh) {
 		if (sw / sh < gw / gh) {
 			return new Dimension((int) gw, (int) (gw / sw * sh));

@@ -1,91 +1,69 @@
 package com.rikardlegge.mediarenderer;
 
-/*
- * Copyright (C) Rikard Legge. All rights reserved.
- */
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 class ShellCmd {
-	Process p;
-	BufferedReader reader;
-	BufferedWriter writer;
-	Thread thread;
 
-	ArrayList<String> stack;
-
-	ShellCmd() {
-		// See function create(String command) for case used.
+	private Process execute(String command) throws Exception {
+		return Runtime.getRuntime().exec(command);
 	}
 
-	public void startProcess(final String command) {
+	public Process executeCommandAsync(String command) {
+		return executeCommandAsync(command, false);
+	}
+
+	public Process executeCommandAsync(String command, boolean keepStreamsOpen) {
 		System.out.println("$ " + command);
 		try {
-			ProcessBuilder builder = new ProcessBuilder("bash", "-c", command);
-			p = builder.start();
+			Process p = execute(command);
+			if (!keepStreamsOpen) {
+				p.getInputStream().close();
+				p.getOutputStream().close();
+				p.getErrorStream().close();
+			}
+			return p;
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-
-	public void startProcess(final String commands[]) {
-
-		System.out.print("$ ");
-		for (String s : commands) {
-			System.out.print(s+" ");
 		}
 		System.out.println("");
-		
-		try {
-			ProcessBuilder builder = new ProcessBuilder(commands);
-			p = builder.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		return null;
 	}
 
-	/**
-	 * This is a previous version whih used the getRuntime instead of the processbuilder. Might work
-	 * 
-	 * @deprecated
-	 */
-	public void startProcess_deprecated(final String command) {
+	public String executeCommand(String command) {
 		System.out.println("$ " + command);
+
+		StringBuffer output = new StringBuffer();
+		Process p = null;
 		try {
-			p = Runtime.getRuntime().exec(command);
-			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			p = execute(command);
+			p.waitFor();
+
 			String line = "";
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
+				output.append(line + "\n");
+			}
+			reader.close();
+
+			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			while ((line = reader.readLine()) != null) {
+				output.append(line + "\n");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				p.getInputStream().close();
+				p.getOutputStream().close();
+				p.getErrorStream().close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+		System.out.println(output.toString());
+		return output.toString();
 	}
 
-	public void executeCommand(String command) {
-		System.out.println("$ " + command);
-		try {
-			// uses the getRuntime instead of projectbuilder, since i was unable
-			// to get the processbuilder to execute long lines of shell code
-			p = Runtime.getRuntime().exec(command);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void executeCommandAndWaitForTermination(String command) {
-		System.out.println("$ " + command);
-		try {
-			// uses the getRuntime instead of projectbuilder, since i was unable
-			// to get the processbuilder to execute long lines of shell code
-			p = Runtime.getRuntime().exec(command);
-			p.waitFor();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }

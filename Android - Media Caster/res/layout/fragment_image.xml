@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <ImageView
+        android:id="@+id/contentImageView"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linearLayout01"
+        android:contentDescription="@string/Setup"
+        android:scaleType="matrix" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout01"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:background="@android:color/background_dark"
+        android:gravity="center_horizontal" >
+
+        <ImageButton
+            android:id="@+id/Button_Reset"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="60dp"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@string/Image"
+            android:src="@android:drawable/ic_menu_rotate" />
+
+        <ImageButton
+            android:id="@+id/Button_AutoScale"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="60dp"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@string/Image"
+            android:src="@android:drawable/ic_menu_crop" />
+
+        <ImageButton
+            android:id="@+id/Button_ToggleInstant"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@string/Image"
+            android:src="@android:drawable/presence_online" />
+    </LinearLayout>
+
+</RelativeLayout>

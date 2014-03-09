@@ -1,12 +1,9 @@
 package com.rikardlegge.mediarenderer;
 
-/*
- * Copyright (C) Rikard Legge. All rights reserved.
- */
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -16,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,9 +30,8 @@ public class DisplayHandle extends JFrame {
 
 	private static final int serverPort = 5000; // Socket variables
 	private static final int socketBufferSize = 65536; // Socket variables
-	private static final int maxDisplayTime = 60 * 60; // How long will local content be shown. Does not include videos
-														// since they are
-														// displayed using external player Seconds
+	private static final int maxDisplayTime = 60 * 60;
+	private static final int breakChar = (byte) '¤' & 0xFF;
 
 	private JPanel panel;
 	private ReciverHandle reciverHandle;
@@ -51,7 +48,7 @@ public class DisplayHandle extends JFrame {
 
 	// The states of the program
 	enum State {
-		idle, downloading, displaying, error, video
+		idle, downloading, image, error, video;
 	}
 
 	// Creation
@@ -66,7 +63,8 @@ public class DisplayHandle extends JFrame {
 		lastUpdate = 0;
 		exit = false;
 		state = State.idle;
-		validationKey = (validationKey != null) ? validationKey : "TestKey001";
+		validationKey = shell.executeCommand("sh helper.sh validationkey").trim();
+		validationKey = (validationKey != null) ? validationKey : "_default_";
 
 		initiateShell();
 		setupUI();
@@ -97,6 +95,7 @@ public class DisplayHandle extends JFrame {
 	}
 
 	private void initiateShell() {
+		shell.executeCommand("sh helper.sh rmfifo").length();
 		shell.executeCommand("sh helper.sh mkfifo");
 	}
 
@@ -171,16 +170,24 @@ public class DisplayHandle extends JFrame {
 		System.exit(0);
 	}
 
+	private void closeVideo() throws InterruptedException {
+		shell.executeCommand("killall -9 youtube-dl");
+		Thread.sleep(100);
+		shell.executeCommand("killall -9 /usr/bin/omxplayer.bin");
+		Thread.sleep(100);
+	}
+
 	// Animate / Display messages which might help see if the system is responsive
 	private void animateUI() {
 
-		if (System.currentTimeMillis() - lastUpdate > maxDisplayTime * 1000) {
+		if (System.currentTimeMillis() - lastUpdate > maxDisplayTime * 1000 && state != State.video) {
 			lastUpdate = System.currentTimeMillis();
+			reciverHandle.Clear();
 			setDrawState(State.idle);
 		}
 
 		// Sets the text depending on the state
-		String txt = "Unknown state";
+		String txt;
 		switch (state) {
 			case idle:
 				txt = "Waiting for media";
@@ -191,20 +198,38 @@ public class DisplayHandle extends JFrame {
 			case error:
 				txt = "Error loading content";
 			break;
-			case displaying:
+			case image:
 				txt = "";
 			break;
 			case video:
 				txt = "Loading video";
 			break;
 			default:
+				txt = "Unknown state";
 			break;
 		}
+
 		if (stateMessage != null) txt += ": " + stateMessage;
 
 		// Loadingish...
 		if (state != State.error) for (int i = 0; i < animationFrame % 4; i++)
 			txt += ".";
+
+		// Hide if video is running
+		if (state == State.video) if (shell.executeCommand("sh helper.sh omxplayer_pool").length() > 2) {
+			txt = "";
+		} else {
+			if (System.currentTimeMillis() - lastUpdate > 60 * 1000) {
+				try {
+					closeVideo();
+				} catch (Exception e) {}
+
+				state = State.idle;
+				setDrawStateMessage("");
+				txt = "Closing video...";
+			}
+		}
+
 		// Only repaint the lable
 		StateLable.setText(txt);
 		StateLable.repaint();
@@ -214,7 +239,7 @@ public class DisplayHandle extends JFrame {
 	private void setDrawState(State state, String stateMessage) {
 		this.state = state;
 		this.stateMessage = stateMessage;
-		if (state != State.displaying) reciverHandle.Clear();
+		if (state != State.image) reciverHandle.Clear();
 		animateUI();
 	}
 
@@ -231,7 +256,7 @@ public class DisplayHandle extends JFrame {
 	public String readByteStream(BufferedInputStream dis) throws Exception {
 		String str = "";
 		int byt;
-		while ((byt = dis.read()) != -1) {
+		while ((byt = dis.read()) != breakChar && byt != -1) {
 			str += ((char) (byte) byt);
 		}
 		return str;
@@ -239,12 +264,16 @@ public class DisplayHandle extends JFrame {
 
 	private interface ReciverPreHandle {
 		void read(BufferedInputStream dis) throws Exception;
+
+		void write(BufferedOutputStream dos) throws Exception;
 	}
 
 	ReciverPreHandle RPH_Other = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			setDrawState(State.idle);
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_Image = new ReciverPreHandle() {
@@ -253,87 +282,129 @@ public class DisplayHandle extends JFrame {
 
 			if (img == null) throw new Exception("Unable to fech image");
 
-			setDrawState(State.displaying); // Change state to prevent repaint
+			setDrawState(State.image); // Change state to prevent repaint
 			reciverHandle.RecivedImage(img); // Displays the recently loaded image
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_URL_Image = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			String str = readByteStream(dis); // Get URL
+			str = str.substring(0, str.length() - 1);
 			BufferedImage img = null;
 			setDrawStateMessage(str);
 
 			if (str != null) img = reciverHandle.GetImageFromURL(str);
 			if (img == null) throw new Exception("No image found at the specified URL");
 
-			setDrawState(State.displaying);
+			setDrawState(State.image);
 			reciverHandle.RecivedImage(img);
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_URL_Video = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			String str = readByteStream(dis); // Get URL
+			str = str.substring(0, str.length() - 1);
 			if (str == null) throw new Exception("Unable to recive the video URL");
 
 			panel.repaint();
 			setDrawState(State.video, str);
-
-			// Command to start omxplayer on the raspberry pi with hdmi as the sound output, using the
-			// current url as a source
-			// shell.startProcess("omxplayer -o hdmi \"" + str + "\"");
-			shell.executeCommand("sh helper.sh omxplayer " + str);
+			shell.executeCommandAsync("sh helper.sh omxplayer " + str);
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_URL_Youtube = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			String str = readByteStream(dis); // Get URL
+			str = str.substring(0, str.length() - 1);
 			if (str == null) throw new Exception("Unable to recive the video URL");
 
 			panel.repaint();
 			setDrawState(State.video, str);
 
-			// Command to start omxplayer on the raspberry pi with hdmi as the sound output, using the
-			// current url as a source
-			// + uses the youtube-dl to fech the true video url.
-			// shell.executeCommand("sh ./youtube.sh " + str);
-			shell.executeCommand("sh helper.sh omxplayer_youtube " + str);
-			// shell.startProcess(new String[]{"omxplayer","-o", "hdmi", "$(youtube-dl -s -g "+str+")"});
+			shell.executeCommandAsync("sh helper.sh omxplayer_youtube " + str);
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_Video_Controll = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			String str = readByteStream(dis); // Get URL
-			if (str == null) throw new Exception("Unable to recive the video URL");
+			if (str == null) throw new Exception("No controll was sent");
 
 			switch (str) {
 				case "pause":
-					shell.executeCommand("sh helper.sh omxplayer_pause");
+					shell.executeCommandAsync("sh helper.sh omxplayer_pause");
 				break;
 				case "seek-30":
-					shell.executeCommand("sh helper.sh omxplayer_seek-30");
+					shell.executeCommandAsync("sh helper.sh omxplayer_seek-30");
 				break;
 				case "seek30":
-					shell.executeCommand("sh helper.sh omxplayer_seek30");
+					shell.executeCommandAsync("sh helper.sh omxplayer_seek30");
 				break;
 				case "seek-600":
-					shell.executeCommand("sh helper.sh omxplayer_seek-600");
+					shell.executeCommandAsync("sh helper.sh omxplayer_seek-600");
 				break;
 				case "seek600":
-					shell.executeCommand("sh helper.sh omxplayer_seek600");
+					shell.executeCommandAsync("sh helper.sh omxplayer_seek600");
 				break;
 				case "_quit":
-					shell.executeCommand("sh helper.sh omxplayer_quit");
+					shell.executeCommandAsync("sh helper.sh omxplayer_quit");
 				break;
 				case "quit": // forcequit
-					shell.executeCommand("killall -9 /usr/bin/omxplayer.bin");
-					shell.executeCommand("killall -9 youtube-dl");
+					closeVideo();
 				break;
 			}
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
+	};
+
+	ReciverPreHandle RPH_Image_Controll = new ReciverPreHandle() {
+		public void read(BufferedInputStream dis) throws Exception {
+			String str = readByteStream(dis); // Get URL
+			str = str.substring(0, str.length() - 1);
+			int[] decoded = new int[5];
+			String[] split = new String[6];
+			if (str == null) throw new Exception("No controll was sent");
+
+			split = str.split(":");
+			try {
+				decoded[0] = Integer.parseInt(split[1]);
+				decoded[1] = Integer.parseInt(split[2]);
+				decoded[2] = Integer.parseInt(split[3]);
+				decoded[3] = Integer.parseInt(split[4]);
+				decoded[4] = Integer.parseInt(split[5]);
+			} catch (Exception e) {}
+
+			switch (split[0]) {
+				case "position":
+					reciverHandle.itemContainer.setImagePosition(decoded[0], decoded[1]);
+				break;
+				case "size":
+					reciverHandle.itemContainer.setImageSize(decoded[0], decoded[1]);
+				break;
+				case "rotation":
+					reciverHandle.itemContainer.setImageRotation(decoded[0]);
+				break;
+				case "full":
+					reciverHandle.itemContainer.setImagePosition(decoded[0], decoded[1]);
+					reciverHandle.itemContainer.setImageSize(decoded[2], decoded[3]);
+					reciverHandle.itemContainer.setImageRotation(decoded[4]);
+				break;
+			}
+			reciverHandle.itemContainer.repaint();
+		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_Command = new ReciverPreHandle() {
@@ -343,21 +414,71 @@ public class DisplayHandle extends JFrame {
 
 			panel.repaint();
 			setDrawState(State.idle, str);
-			shell.executeCommand(str); // Disabled for security reasons
+			// shell.executeCommand(str); // Disabled for security reasons
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
 	};
 
 	ReciverPreHandle RPH_Quit = new ReciverPreHandle() {
 		public void read(BufferedInputStream dis) throws Exception {
 			initiateExit();
 		}
+
+		public void write(BufferedOutputStream dos) throws Exception {}
+	};
+
+	ReciverPreHandle RPH_GETINFO = new ReciverPreHandle() {
+
+		String message;
+
+		public void read(BufferedInputStream dis) throws Exception {
+			String str = readByteStream(dis); // Get URL
+			if (str == null) throw new Exception("No querry was sent");
+			str = str.substring(0, str.length() - 1);
+			Dimension screenDimensions;
+			switch (str) {
+				case "screensize":
+					screenDimensions = Main.getScreenDimensions();
+					message = screenDimensions.width + ":" + screenDimensions.height;
+				break;
+				case "imagecontent":
+					if (reciverHandle.itemContainer != null && reciverHandle.itemContainer.imageIcon != null) {
+						message = "";
+						message += reciverHandle.itemContainer.x + ":" + reciverHandle.itemContainer.y + ":";
+						message += reciverHandle.itemContainer.imageIcon.getIconWidth() + ":"
+								+ reciverHandle.itemContainer.imageIcon.getIconHeight() + ":";
+						message += reciverHandle.itemContainer.r;
+					}
+				break;
+				case "state":
+					message = state.name() + "";
+				break;
+			}
+		}
+
+		public void write(BufferedOutputStream dos) throws Exception {
+			boolean error = false;
+			try {
+				if (message == null) message = "-1";
+				message += "¤";
+				dos.write(message.getBytes());
+				dos.flush();
+
+			} catch (IOException e) {
+				error = true;
+			}
+			message = null;
+			if (dos != null) dos.close();
+			if (error) throw new Exception("Unable to reply to request");
+		}
 	};
 
 	// RUNTIME: Infinite loop to listen for a connection and hadle it.
 	public void listenForConnection() {
-		ServerSocket socket;
+		ServerSocket server;
 		try {
-			socket = new ServerSocket(serverPort);
+			server = new ServerSocket(serverPort);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -369,42 +490,50 @@ public class DisplayHandle extends JFrame {
 		handles[Commandid.URL_Video.Id()] = RPH_URL_Video;
 		handles[Commandid.URL_Youtube.Id()] = RPH_URL_Youtube;
 		handles[Commandid.Video_Controll.Id()] = RPH_Video_Controll;
+		handles[Commandid.Image_Controll.Id()] = RPH_Image_Controll;
+		handles[Commandid.GetInfo.Id()] = RPH_GETINFO;
 		handles[Commandid.Other.Id()] = RPH_Other;
 		handles[Commandid.Command.Id()] = RPH_Command;
 		handles[Commandid.Quit.Id()] = RPH_Quit;
 
 		while (!exit) {
-			Socket clientSocket = null;
+			Socket socket = null;
 			BufferedInputStream dis = null;
-			// BufferedOutputStream dos = null;
+			BufferedOutputStream dos = null;
 			try {
-				clientSocket = socket.accept(); // Wait for the socket to get a connection
-				dis = new BufferedInputStream(clientSocket.getInputStream(), socketBufferSize);
-				// dos = new BufferedOutputStream(clientSocket.getOutputStream(), socketBufferSize);
-
-				lastUpdate = System.currentTimeMillis();
-
-				/* String key = readByteStream(dis);
-				int sucessvalue = (key.equals(validationKey)) ? 1 : 0;
-				dos.write((byte) sucessvalue);
-				if (sucessvalue == 0) throw new Exception("Invalid key");*/
+				socket = server.accept(); // Wait for the socket to get a connection
+				dis = new BufferedInputStream(socket.getInputStream(), socketBufferSize);
+				dos = new BufferedOutputStream(socket.getOutputStream(), socketBufferSize);
 
 				int packageId = dis.read();
 				System.out.println("Recived: " + Commandid.getById(packageId));
 
+				String key = readByteStream(dis);
+				key = key.substring(0, key.length() - 1);
+
+				int sucessvalue = (key.equals(validationKey)) ? 1 : 0;
+
+				dos.write((byte) sucessvalue);
+				dos.flush();
+				if (sucessvalue == 0) {
+					System.out.println("\"" + key + "\" / \"" + validationKey + "\"");
+					throw new Exception("Invalid key");
+				}
+
+				lastUpdate = System.currentTimeMillis();
+
 				if (handles[packageId] == null) packageId = Commandid.Other.Id();
 
 				if (Commandid.getById(packageId).Clear()) {
-					if (state == State.video) {
-						// Command to kill the current video process, omxplayer (Only tested on a raspberry pi)
-						shell.executeCommand("killall -9 youtube-dl");
-						Thread.sleep(100);
-						shell.executeCommandAndWaitForTermination("killall -9 /usr/bin/omxplayer.bin");
-						// Thread.sleep(5000); // Make sure to not kill a new instance of the player.
-					}
+
+					if (state == State.video)
+						closeVideo();
+					else if (state == State.image) reciverHandle.Clear();
 					setDrawState(State.downloading);
 				}
+
 				handles[packageId].read(dis);
+				handles[packageId].write(dos);
 			} catch (Exception e) {
 				e.printStackTrace();
 				setDrawState(State.error, e.getMessage());
@@ -412,7 +541,7 @@ public class DisplayHandle extends JFrame {
 
 			try {
 				if (dis != null) dis.close();
-				if (clientSocket != null) clientSocket.close();
+				if (socket != null) socket.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -420,119 +549,7 @@ public class DisplayHandle extends JFrame {
 		}
 
 		try {
-			socket.close(); // Closes the socket on exit
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public void listenForConnection_deprecated() {
-		ServerSocket socket = null;
-		try {
-			socket = new ServerSocket(serverPort);
-			while (!exit) {
-				try {
-
-					/*
-					 * BYTE VALUES ONLY
-					 * 11: Image
-					 * 21: ImageURL
-					 * 22: VideoURL
-					 * 23: YoutubeURL
-					 * 254: Stop
-					 * Other: Clear
-					 */
-
-					Socket clientSocket = socket.accept(); // Wait for the socket to get a connection
-
-					lastUpdate = System.currentTimeMillis(); // Sets the last update which is used to dim the display if idle
-
-					BufferedInputStream dis = new BufferedInputStream(clientSocket.getInputStream(), socketBufferSize);
-					int packageContent = dis.read(); // Package content id, Se previous table for explanation
-
-					BufferedImage img; // Cache for if recived image
-					String str; // URL Cache
-					System.out.println("Recived:" + packageContent);
-
-					if (state == State.video) {
-						shell.executeCommandAndWaitForTermination("killall -9 /usr/bin/omxplayer.bin"); // Command to kill the current video
-																										// process, omxplayer
-						// (Only tested on a raspberry pi)
-					}
-
-					switch (packageContent) {
-						case 11:
-							setDrawState(State.downloading); // Changes the draw state
-							img = ImageIO.read(dis); // Loads the image from the sending device
-							setDrawState(State.displaying); // Change state to prevent repaint
-							if (img != null) {
-								reciverHandle.RecivedImage(img); // Displays the recently loaded image
-							} else
-								setDrawState(State.error);
-						break;
-						case 21:
-							setDrawState(State.downloading);
-							str = readByteStream(dis);
-							img = null;
-							if (str != null) {
-								img = reciverHandle.GetImageFromURL(str);
-								setDrawState(State.displaying);
-							}
-							if (img != null)
-								reciverHandle.RecivedImage(img);
-							else
-								setDrawState(State.error);
-						break;
-						case 22:
-							str = readByteStream(dis); // Get URL
-							if (str != null) {
-								panel.repaint();
-								setDrawState(State.video);
-								shell.startProcess("omxplayer -o hdmi \"" + str + "\""); // Command to start omxplayer on the raspberry
-																							// pi
-																							// with
-																							// hdmi as the sound output, using the
-																							// current
-																							// url
-																							// as a source
-							} else
-								setDrawState(State.error);
-						break;
-						case 23:
-							str = readByteStream(dis); // Get URL
-							if (str != null) {
-								panel.repaint();
-								setDrawState(State.video);
-								shell.executeCommand("omxplayer -o hdmi $(youtube-dl -s -g \"" + str + "\")"); // See case 22:. + uses the
-																												// youtube-dl to fech the
-																												// true
-																												// video url.
-							} else
-								setDrawState(State.error);
-						break;
-						case 254:
-							initiateExit(); // Exits the program
-						break;
-						default:
-							setDrawState(State.idle); // Stops all and makes the program idle
-						break;
-					}
-					dis.close();
-					clientSocket.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-					setDrawState(State.error);
-				}
-				Thread.yield();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			socket.close(); // Closes the socket on exit
+			server.close(); // Closes the socket on exit
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

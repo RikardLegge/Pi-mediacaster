@@ -14,5 +14,10 @@
     <string name="ValidationKey">Validation key</string>
     <string name="Port">Port</string>
     <string name="Ip">Ip address</string>
+    <string name="ResetMatrix">ResetMatrix</string>
+    
+    <string name="Setup">Setup</string>
+    <string name="Image">Image Controls</string>
+    <string name="Video">Video Controls</string>
 
 </resources>

@@ -1,0 +1,73 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Initial_Setup"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.rikardlegge.mediacaster.Setup" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:padding="@dimen/activity_vertical_margin" >
+
+        <EditText
+            android:id="@+id/EditText_IP"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="@string/Ip"
+            android:imeOptions="actionDone"
+            android:inputType="number|text" >
+
+            <requestFocus />
+        </EditText>
+
+        <EditText
+            android:id="@+id/EditText_Port"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="@string/Port"
+            android:imeOptions="actionDone"
+            android:inputType="numberDecimal" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/EditText_Key"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:ems="10"
+        android:gravity="center"
+        android:hint="@string/ValidationKey"
+        android:imeOptions="actionDone"
+        android:inputType="text" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout01"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:background="@android:color/background_dark"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/Button_ClearDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_margin="10dp"
+            android:text="@string/clearDisplay"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,8 +1,5 @@
 package com.rikardlegge.mediacaster;
 
-/*
- * Copyright (C) Rikard Legge. All rights reserved.
- */
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 
@@ -11,6 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+
+import com.rikardlegge.mediacaster.helpers.Commandid;
+import com.rikardlegge.mediacaster.helpers.SendHandle;
+import com.rikardlegge.mediacaster.helpers.Settings;
 
 public class IntentReceiver extends Activity {
 	final static int socketBufferSize = 65536;
@@ -20,9 +22,20 @@ public class IntentReceiver extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		// Load settings specified in client application
 		// Needs to be called for the settingsvariables to be set.
 		new Settings(this.getSharedPreferences("Settings", Context.MODE_PRIVATE), this);
+
+		if (System.currentTimeMillis() - Settings.LastIntentTime < 500) System.exit(0);
+		Settings.prefs.edit().putLong("LastIntentTime", System.currentTimeMillis()).commit();
+		Settings.readSettings();
+
 		sendHandle = new SendHandle();
 
 		// Declare variables for easy use later
@@ -30,7 +43,7 @@ public class IntentReceiver extends Activity {
 		String action = intent.getAction();
 		String type = intent.getType();
 		boolean exit = false;
-		
+
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_VIEW.equals(action)) && type != null) {
 			if (type.startsWith("image/")) { // If the content is an image
 				handleSendImage(intent);
@@ -41,7 +54,8 @@ public class IntentReceiver extends Activity {
 					str = str.split("&feature=", 1)[0];
 					handleSendText(str, Commandid.URL_Youtube.Id()); // Send youtube link( id: 23)
 
-				} else handleSendText(str, Commandid.URL_Image.Id()); // Send image link( id: 21)
+				} else
+					handleSendText(str, Commandid.URL_Image.Id()); // Send image link( id: 21)
 
 			} else if (type.startsWith("video/")) {// If the content is an video
 													// url
@@ -71,20 +85,17 @@ public class IntentReceiver extends Activity {
 		}
 	}
 
+	public void Canceled(View v) {
+		requestExit();
+	}
+
 	void handleSendText(String str, int id) {
-		// Conversion from char to byte
-		char[] chars = str.toCharArray();
-		byte[] bytes = new byte[chars.length];
-		for (int i = 0; i < chars.length; i++) {
-			bytes[i] = (byte) chars[i];
-		}
-		// Create an inputstream of the text bytes to send.
-		ByteArrayInputStream iStream = new ByteArrayInputStream(bytes);
-		// Sends the data from the previosly created inputstream
+		str += "¤";
+		ByteArrayInputStream iStream = new ByteArrayInputStream(str.getBytes());
 		sendHandle.sendData((byte) id, iStream, true);
 	}
 
-	static void requestExit() {
+	public static void requestExit() {
 		System.exit(0);
 	}
 }
