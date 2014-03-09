@@ -2,12 +2,12 @@ Pi-mediacaster - ALPHA
 ==============
 ## Description
 This is a small Java project which enables devices to stream media to each other and display the content.(A bit like DLNA, but since i haven't found a DLNA renderer for my raspberry pi which supported hardware accelerated playback, I decided to build my own.) The initial idea was for an Android phone to be able to send media to a Raspberry pi, in the same way as chrome cast/DLNA devices work. NOT WITH A CHROMECAST DEVICE, NOR WITH THE SAME PROTOCOL.
-In the current state, the image viewing is available on systems like Linux, OS X and Windows, since it uses Java Swing to render the content. 
-The video on the other hand currently uses "omxplayer" for Raspberry pi/Linux, as well as the "youtube-dl" to display video.
-The android application is also a work in progress, but has most of the core functionality built into it. 
+
+In the current state, the image viewing is available on systems like Linux, OS X and Windows, since it uses Java Swing to render the content. The video on the other hand currently uses "omxplayer" for Raspberry pi/Linux, as well as the "youtube-dl" to display video. The android application is also a work in progress, but has most of the core functionality built into it. 
 
 This is a result of a weekend hack together, with little to no prior knowledge on sockets, streams or the Linux shell.
-Help is deeply appreciated if you find this project interesting!
+
+**Help is deeply appreciated if you find this project interesting!**
 
 ## Features
 + Stream media from an Android device to any Raspberry PI or other computer running the Java server.
@@ -46,7 +46,7 @@ If sound does not work, try (shell file for this can be found in PI - Media rend
 Tip 1: To start the server on startx, create a new file called ".xinitrc" in your home folder. Ex. "/home/pi/.xinitrc"
 Add the line `java -jar location_of_the_server`, for me it looks like `java -jar /home/pi/Downloads/MedisServer.jar`.
 
-Tip 2: Use tmux(http://tmux.sourceforge.net/) to be able to stop a ssh session without the x11(startx) session to stop. In other words, make the server run without an active ssh connection.
+Tip 2: Use [tmux](http://tmux.sourceforge.net/) to be able to stop a ssh session without the x11(startx) session to stop. In other words, make the server run without an active ssh connection.
 
 Download the source to this project / clone the github repository, and do an ordinary build with eclipse. There is alternatively a built version in the package. (WARNING: Might not always be up to date.)
 
