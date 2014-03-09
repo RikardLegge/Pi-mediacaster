@@ -9,6 +9,13 @@ The android application is also a work in progress, but has most of the core fun
 This is a result of a weekend hack together, with little to no prior knowledge on sockets, streams or the Linux shell.
 Help is deeply appreciated if you find this project interesting!
 
+## Features
++ Stream media from an Android device to any Raspberry PI or other computer running the Java server.
++ **Beam** images and video from URL links with a single press of a button. (Youtube.com, mm)
++ Remote image manipulation > Move, zoom and rotate from device.
++ Remote video control > Play, pause and seek.
++ Easy to use
+
 ## Installation
 ### Raspberry PI - **Dependencies**
 This is the first project I host on Github, so the installation guide might not be complete.
